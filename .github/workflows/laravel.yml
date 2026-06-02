@@ -72,6 +72,8 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'TubesWebAppKel9'
-          slot-name: 'Production'
           package: .
+          target-path: '/home/site/wwwroot'
+          clean: true
+          restart: true
           publish-profile: ${{ secrets.TUBES9_CC }}
