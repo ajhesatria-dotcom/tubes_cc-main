@@ -1,0 +1,48 @@
+name: Deploy Laravel to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v4
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, xml, curl, json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-dev --optimize-autoloader
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v4
+        with:
+          app-name: TubesWebAppKel9
+          publish-profile: ${{ secrets.TUBES9_CC }}
+          package: .
